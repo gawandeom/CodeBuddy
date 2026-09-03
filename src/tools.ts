@@ -1,5 +1,5 @@
 import { tool } from "langchain";
-import { listFiles, readFile, writeFile } from "./fileops.js";
+import { listFiles, readFile, searchFiles, writeFile } from "./fileops.js";
 import * as z from "zod";
 
 export const readFileTool = tool(
@@ -53,3 +53,14 @@ export const listFilesTool = tool(
     }),
   },
 );
+
+export const searchFilesTool = tool(({query})=>{
+console.log("🔎 search_files called with:", query);
+  return searchFiles(query)
+},
+{name:"search_files",
+  description:"searches the conetent in every file",
+  schema:z.object({
+    query:z.string()
+  })
+})
