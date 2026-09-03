@@ -4,6 +4,7 @@ import * as z from "zod";
 
 export const readFileTool = tool(
   ({ filePath }) => {
+    console.log("📖 read_file called with:", filePath);
     try {
       return readFile(filePath);
     } catch (error: any) {
@@ -35,6 +36,7 @@ export const writeFileTool = tool(
 
 export const listFilesTool = tool(
   ({ dirPath }) => {
+    console.log(`list file called ${dirPath}`)
     try {
       const files = listFiles(dirPath ?? ".");
       return files.join(", ");

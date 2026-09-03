@@ -1,12 +1,13 @@
 import { existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 
-const workspaceDir = path.resolve(process.cwd(), "workspace");
+const workspaceDir = path.resolve(process.cwd(), "./src", "workspace");
 
 function resolveWorkspacePath(filePath: string): string {
   const resolved = path.resolve(workspaceDir, filePath);
+  const relative = path.relative(workspaceDir, resolved);
 
-  if (!resolved.startsWith(workspaceDir)) {
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
     throw new Error(`Access denied: "${filePath}" is outside the workspace`);
   }
 
@@ -19,6 +20,7 @@ export function fileExists(filePath: string): boolean {
 }
 
 export function readFile(filePath: string): string {
+  
   const safePath = resolveWorkspacePath(filePath);
   if (!existsSync(safePath)) {
     throw new Error(`File Not Found: ${filePath}`);
@@ -36,3 +38,4 @@ export function listFiles(filePath: string = "."): string[] {
   const safePath = resolveWorkspacePath(filePath);
   return readdirSync(safePath);
 }
+
