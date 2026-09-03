@@ -1,6 +1,6 @@
 #!/usr/bin/env -S npx tsx
 import { Command } from "commander";
-import { createCodeBuddyAgent } from "./agent.js";
+import { createCodeBuddyAgent, createStructuringAgent, } from "./agent.js";
 import { fileExists, readFile, writeFile } from "./fileops.js";
 import { showDifference } from "./diff.js";
 import { askApproval } from "./prompt.js";
@@ -23,10 +23,9 @@ if (!fileExists(filePath)) {
   process.exit(1);
 }
 
-const originalContent = readFile(filePath);
-const agent = createCodeBuddyAgent();
+const Workeragent = createCodeBuddyAgent();
 
-const result = await agent.invoke({
+const RawResult = await Workeragent.invoke({
   messages: [
     {
       role: "user",
@@ -34,20 +33,45 @@ const result = await agent.invoke({
     },
   ],
 });
+4
+const rawOutput = RawResult.messages.at(-1)?.content;
 
-console.log(result.messages.at(-1)?.content);
+const structuringAgent = createStructuringAgent();
+const structured = await structuringAgent.invoke({
+  messages: [
+    {
+      role: "user",
+      content: `Here is a description of code changes across one or more files:\n\n${rawOutput}\n\nOutput ONLY the file changes as data. Do not include any schema, type definitions, or metadata about the format — only the actual filePath and content values.`,
+    },
+  ],
+});
 
+if (!structured.structuredResponse) {
+  console.error("❌ The agent didn't return a structured response. Raw output:");
+  console.error(structured.messages.at(-1)?.content);
+  process.exit(1);
+}
 
-const proposedCode = result.messages.at(-1)?.content as string
-console.log("Proposed Changes")
-showDifference(originalContent,proposedCode)
+for (const file of structured.structuredResponse.files) {
+  let originalContent: string;
+  try {
+    originalContent = readFile(file.filePath);
+  } catch {
+    originalContent = ""; // treat as a new file
+  }
 
+  const proposedCode = file.content;
 
-const approved = await askApproval("Apply This Change (y/n)")
+  console.log(`\n ${file.filePath}`);
+  console.log("Proposed Changes");
+  showDifference(originalContent, proposedCode);
 
-if(approved){
-  writeFile(filePath,proposedCode)
-  console.log("file Saved")
-}else{
-  console.log("change discarded")
+  const approved = await askApproval(`Apply changes to ${file.filePath}? (y/n) `);
+
+  if (approved) {
+    writeFile(file.filePath, proposedCode);
+    console.log(` ${file.filePath} saved`);
+  } else {
+    console.log(` ${file.filePath} discarded`);
+  }
 }

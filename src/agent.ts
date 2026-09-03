@@ -1,14 +1,22 @@
 import "dotenv/config";
 import { createAgent, modelRetryMiddleware } from "langchain";
 import { listFilesTool, readFileTool, writeFileTool } from "./tools.js";
+import { MultiFileEdit } from "./schema.js";
 
 export function createCodeBuddyAgent() {
   return createAgent({
     model: "groq:openai/gpt-oss-120b",
-    tools: [readFileTool, writeFileTool, listFilesTool],
+    tools: [readFileTool, listFilesTool],
     middleware: [modelRetryMiddleware({ maxRetries: 2 })],
-    systemPrompt: `You are a coding assistant. You have exactly three tools: read_file, write_file, and list_files. Do not use, mention, or attempt to call any other tool.
+    systemPrompt: `You are a coding assistant with read_file and list_files tools.
+Use them to understand the code. Once ready, describe the full new content for every file that needs to change, clearly labeled by filename.`,
+  });
+}
 
-If you need to check what other files exist before making a change, use list_files. Read the target file using read_file, then propose an improved version based on the user's instruction. Output ONLY the new code as your reply — do not call write_file, do not add explanation or markdown formatting.`,
+export function createStructuringAgent() {
+  return createAgent({
+    model: "groq:openai/gpt-oss-120b",
+    tools: [], 
+    responseFormat: MultiFileEdit,
   });
 }
