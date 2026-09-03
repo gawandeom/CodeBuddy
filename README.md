@@ -1,7 +1,7 @@
 # CodeBuddy
 
 A CLI coding assistant that reads a file, proposes an AI-generated
-improvement based on your instruction, shows a colored diff, and
+improvement based on your instruction, shows a coloured diff, and
 only writes the change after you approve it.
 
 ## Why
