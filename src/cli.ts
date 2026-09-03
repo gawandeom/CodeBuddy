@@ -1,7 +1,9 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S npx tsx
 import { Command } from "commander";
 import { createCodeBuddyAgent } from "./agent.js";
-import { fileExists, readFile } from "./fileops.js";
+import { fileExists, readFile, writeFile } from "./fileops.js";
+import { showDifference } from "./diff.js";
+import { askApproval } from "./prompt.js";
 
 const program = new Command();
 program
@@ -34,3 +36,18 @@ const result = await agent.invoke({
 });
 
 console.log(result.messages.at(-1)?.content);
+
+
+const proposedCode = result.messages.at(-1)?.content as string
+console.log("Proposed Changes")
+showDifference(originalContent,proposedCode)
+
+
+const approved = await askApproval("Apply This Change (y/n)")
+
+if(approved){
+  writeFile(filePath,proposedCode)
+  console.log("file Saved")
+}else{
+  console.log("change discarded")
+}

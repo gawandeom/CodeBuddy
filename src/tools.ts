@@ -1,5 +1,5 @@
 import { tool } from "langchain"
-import { readFile, WriteFile } from "./fileops.js"
+import { readFile, writeFile } from "./fileops.js"
 import * as z from "zod"
 
 
@@ -19,7 +19,7 @@ export const readFileTool =tool (({filePath})=>{
 })
 
 export const writeFileTool =tool (({filePath,content})=>{
-  return WriteFile(filePath,content)
+  return writeFile(filePath,content)
 },{
     name:"write_file",
     description:"writes the content in the file",
