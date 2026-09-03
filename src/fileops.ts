@@ -10,7 +10,7 @@ export function readFile(filePath: string) {
   return readFileSync(filePath, "utf-8");
 }
 
-export function WriteFile(filePath: string, content: string) {
+export function writeFile(filePath: string, content: string) {
   writeFileSync(filePath, content, "utf-8");
   return `Saved ${filePath}`;
 }

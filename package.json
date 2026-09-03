@@ -8,6 +8,9 @@
     "build": "tsc",
     "start": "node dist/index.js"
   },
+  "bin": {
+    "codebuddy": "./src/cli.ts"
+  },
   "author": "",
   "license": "ISC",
   "description": "",
@@ -27,6 +30,7 @@
     "zod": "^4.5.2"
   },
   "devDependencies": {
+    "@types/diff": "^7.0.2",
     "@types/node": "^26.4.1"
   }
 }
