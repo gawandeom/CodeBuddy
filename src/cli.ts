@@ -1,6 +1,6 @@
 #!/usr/bin/env -S npx tsx
 import { Command } from "commander";
-import { createCodeBuddyAgent, createStructuringAgent, } from "./agent.js";
+import { createCodeBuddyAgent, createStructuringAgent } from "./agent.js";
 import { fileExists, readFile, writeFile } from "./fileops.js";
 import { showDifference } from "./diff.js";
 import { askApproval } from "./prompt.js";
@@ -33,23 +33,46 @@ const RawResult = await Workeragent.invoke({
     },
   ],
 });
-4
+4;
 const rawOutput = RawResult.messages.at(-1)?.content;
+console.log("\n--- WORKER OUTPUT ---");
+console.log(rawOutput);
+console.log("--- END WORKER OUTPUT ---\n");
 
 const structuringAgent = createStructuringAgent();
 const structured = await structuringAgent.invoke({
   messages: [
     {
       role: "user",
-      content: `Here is a description of code changes across one or more files:\n\n${rawOutput}\n\nOutput ONLY the file changes as data. Do not include any schema, type definitions, or metadata about the format — only the actual filePath and content values.`,
+      content: `The user asked to work on this file:
+                ${filePath}
+                Here is the worker agent's response:
+                ${rawOutput}
+                Convert the worker's response into the required structured format.
+                Rules:
+                - If the worker answered a question or performed an investigation/check, set intent to "question".
+                - Put the worker's answer in response.
+                - For a question, files must be an empty array.
+                - If the worker proposed code changes, set intent to "edit".
+                - Put a concise explanation in response.
+                - For an edit, put every changed file in files with its filePath and complete new content.
+                - Do not invent file changes.
+`,
     },
   ],
 });
 
 if (!structured.structuredResponse) {
-  console.error("❌ The agent didn't return a structured response. Raw output:");
+  console.error("❌ The agent didn't return a structured response.");
   console.error(structured.messages.at(-1)?.content);
   process.exit(1);
+}
+
+const result = structured.structuredResponse;
+
+if (result.intent === "question") {
+  console.log("\n" + result.response);
+  process.exit(0);
 }
 
 for (const file of structured.structuredResponse.files) {
@@ -66,7 +89,9 @@ for (const file of structured.structuredResponse.files) {
   console.log("Proposed Changes");
   showDifference(originalContent, proposedCode);
 
-  const approved = await askApproval(`Apply changes to ${file.filePath}? (y/n) `);
+  const approved = await askApproval(
+    `Apply changes to ${file.filePath}? (y/n) `,
+  );
 
   if (approved) {
     writeFile(file.filePath, proposedCode);

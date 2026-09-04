@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import path from "node:path";
+import { execSync } from "node:child_process";
 
 const workspaceDir = path.resolve(process.cwd(), "./src", "workspace");
 
@@ -7,6 +8,12 @@ type SearchResult = {
   filePath: string;
   line: number;
   content: string;
+};
+
+type CommandResult = {
+  success: boolean;
+  output?: string;
+  error?: string;
 };
 
 function resolveWorkspacePath(filePath: string): string {
@@ -85,4 +92,44 @@ export function searchFiles(query: string): SearchResult[] {
     }
   }
   return searchResult
+}
+
+export function runCommand(command: string): CommandResult {
+  const firstCommand = command?.trim().split(/\s+/)[0] || "";
+
+  const allowedCommands = [
+    "ls",
+    "pwd",
+    "npm",
+    "npx",
+    "git",
+  ];
+
+  if (!allowedCommands.includes(firstCommand)) {
+    return {
+      success: false,
+      error: `Command not allowed: ${firstCommand}`,
+    };
+  }
+
+  try {
+    const output = execSync(command, {
+      cwd: workspaceDir,
+      stdio: "pipe",
+      timeout: 10000,
+    }).toString();
+
+    return {
+      success: true,
+      output,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error:
+        error.stdout?.toString() ||
+        error.stderr?.toString() ||
+        error.message,
+    };
+  }
 }
