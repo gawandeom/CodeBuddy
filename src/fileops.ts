@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 
-const workspaceDir = path.resolve(process.cwd(), "./src", "workspace");
+export const workspaceDir = path.resolve(process.cwd(), "./src", "workspace");
 
 type SearchResult = {
   filePath: string;
