@@ -1,7 +1,7 @@
 #!/usr/bin/env -S npx tsx
 import { Command } from "commander";
 import { createCodeBuddyAgent, createStructuringAgent } from "./agent.js";
-import { fileExists, readFile, writeFile } from "./fileops.js";
+import { fileExists, readFile,  writeFile } from "./fileops.js";
 import { showDifference } from "./diff.js";
 import { askApproval } from "./prompt.js";
 
@@ -9,19 +9,23 @@ const program = new Command();
 program
   .name("codebuddy")
   .description("AI coding assistant CLI")
-  .requiredOption("-f, --file <filename>", "target file to edit")
+  .option("-f, --file <filename>", "target file to edit")
   .requiredOption("-t, --task <description>", "what change to make")
   .parse();
 
-const { file: filePath, task: description } = program.opts() as {
-  file: string;
+let { file: filePath, task: description } = program.opts() as {
+  file: string | undefined;
   task: string;
 };
+const userMessage = filePath
+  ? `The user provided this file: ${filePath}
 
-if (!fileExists(filePath)) {
-  console.error(`❌ File not found: ${filePath}`);
-  process.exit(1);
-}
+Task: ${description}`
+  : `No specific file was provided.
+
+Explore the workspace using the available tools.
+
+Task: ${description}`;
 
 const Workeragent = createCodeBuddyAgent();
 
@@ -29,23 +33,21 @@ const RawResult = await Workeragent.invoke({
   messages: [
     {
       role: "user",
-      content: `Read the file ${filePath} and apply this instruction: ${description}. Output only the new code.`,
+      content: userMessage,
     },
   ],
 });
-4;
+
 const rawOutput = RawResult.messages.at(-1)?.content;
-console.log("\n--- WORKER OUTPUT ---");
-console.log(rawOutput);
-console.log("--- END WORKER OUTPUT ---\n");
+
+
 
 const structuringAgent = createStructuringAgent();
 const structured = await structuringAgent.invoke({
   messages: [
     {
       role: "user",
-      content: `The user asked to work on this file:
-                ${filePath}
+      content: `
                 Here is the worker agent's response:
                 ${rawOutput}
                 Convert the worker's response into the required structured format.
