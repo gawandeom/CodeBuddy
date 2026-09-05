@@ -60,6 +60,7 @@ export function getAllFiles(dir: string): string[] {
     const fullPath = path.join(dir, entry.name);
 
     if (entry.isDirectory()) {
+      if(entry.name === "node_modules")continue
       files.push(...getAllFiles(fullPath));
     } else if (entry.isFile()) {
       files.push(fullPath);

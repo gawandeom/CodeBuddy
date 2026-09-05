@@ -14,7 +14,7 @@ export const readFileTool = tool(
     try {
       return readFile(filePath);
     } catch (error: any) {
-      console.log(`Error: ${error.message}`);
+      return `Error: ${error.message}`;
     }
   },
   {
@@ -32,7 +32,7 @@ export const writeFileTool = tool(
   },
   {
     name: "write_file",
-    description: "writes the content in the file",
+    description: "Writes the content into the file",
     schema: z.object({
       filePath: z.string(),
       content: z.string(),
@@ -42,7 +42,7 @@ export const writeFileTool = tool(
 
 export const listFilesTool = tool(
   ({ dirPath }) => {
-    console.log(`list file called ${dirPath}`);
+    console.log(`📂 list_files called with: ${dirPath ?? "."}`);
     try {
       const files = listFiles(dirPath ?? ".");
       return files.join(", ");
@@ -55,7 +55,7 @@ export const listFilesTool = tool(
     description:
       "Lists files in a directory inside the workspace. Defaults to the workspace root if no path is given.",
     schema: z.object({
-      dirPath: z.string(),
+      dirPath: z.string().optional(),
     }),
   },
 );
@@ -63,26 +63,41 @@ export const listFilesTool = tool(
 export const searchFilesTool = tool(
   ({ query }) => {
     console.log("🔎 search_files called with:", query);
-    return searchFiles(query);
+    try {
+      return searchFiles(query);
+    } catch (err: any) {
+      return `Error: ${err.message}`;
+    }
   },
   {
     name: "search_files",
-    description: "searches the conetent in every file",
+    description: "Searches the content of every file in the workspace for a given query.",
     schema: z.object({
       query: z.string(),
     }),
   },
 );
 
+
+const ALLOWED_COMMANDS = ["npm test", "npm run build", "npx tsc --noEmit"];
+
 export const runCommandTool = tool(
   ({ command }) => {
-    console.log(`run_command Tool called with ${command}`);
-    return runCommand(command);
+    console.log(`⚙️ run_command called with: ${command}`);
+
+    if (!ALLOWED_COMMANDS.includes(command)) {
+      return `Error: "${command}" is not an allowed command. Allowed commands are: ${ALLOWED_COMMANDS.join(", ")}`;
+    }
+
+    try {
+      return runCommand(command);
+    } catch (err: any) {
+      return `Error: ${err.message}`;
+    }
   },
   {
     name: "run_command",
-    description:
-      "Run a shell command in the workspace and return its output or error. Use this for tests, builds, type checking, and other commands needed to investigate or modify the codebase.",
+    description: `Runs a whitelisted command in the workspace and returns its output. Only these exact commands are allowed: ${ALLOWED_COMMANDS.join(", ")}. Any other command will be refused.`,
     schema: z.object({
       command: z.string(),
     }),
