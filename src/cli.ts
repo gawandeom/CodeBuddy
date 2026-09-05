@@ -3,29 +3,32 @@ import { Command } from "commander";
 import { createCodeBuddyAgent, createStructuringAgent } from "./agent.js";
 import { fileExists, readFile,  writeFile } from "./fileops.js";
 import { showDifference } from "./diff.js";
-import { askApproval } from "./prompt.js";
+import { askApproval, askTask } from "./prompt.js";
 
 const program = new Command();
 program
   .name("codebuddy")
   .description("AI coding assistant CLI")
   .option("-f, --file <filename>", "target file to edit")
-  .requiredOption("-t, --task <description>", "what change to make")
+  .option("-t, --task <description>", "what change to make")
   .parse();
 
 let { file: filePath, task: description } = program.opts() as {
   file: string | undefined;
-  task: string;
+  task: string | undefined;
 };
+
+
+const Task = description ?? await askTask()
 const userMessage = filePath
   ? `The user provided this file: ${filePath}
 
-Task: ${description}`
+Task: ${Task}`
   : `No specific file was provided.
 
 Explore the workspace using the available tools.
 
-Task: ${description}`;
+Task: ${Task}`;
 
 const Workeragent = createCodeBuddyAgent();
 
