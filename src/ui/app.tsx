@@ -2,41 +2,34 @@ import React, { useMemo, useState } from "react";
 import { Box, Text } from "ink";
 import Header from "./header.js";
 import Input from "./Input.js";
-import { createCodeBuddyAgent } from "../agent.js";
 import Spinner from "ink-spinner";
+import { chat } from "../chat.js";
 
 type Message = {
   role: "user" | "assistant";
   content: string;
 };
-
 export default function App() {
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const agent = useMemo(() => createCodeBuddyAgent(), []);
   const handleSubmit = async (value: string): Promise<void> => {
     if (!value.trim()) return;
-    const conversation: Message[] = [
-      ...messages,
-      { role: "user", content: value },
-    ];
 
-    setMessages(conversation);
+    setMessages((prev) => [...prev, { role: "user", content: value }]);
 
     setLoading(true);
     try {
-      const result = await agent.invoke({
-        messages: conversation,
-      });
-
-      const newMessage: Message = {
-        role: "assistant",
-        content: String(result.messages.at(-1)?.content ?? ""),
-      };
-      setMessages((prev) => [...prev, newMessage]);
+      const response = await chat(value);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: response },
+      ]);
     } catch {
-      console.log("Something went wrong.");
+        setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Something went wrong" },
+      ]);
     } finally {
       setLoading(false);
       setValue("");
