@@ -1,13 +1,12 @@
 import "dotenv/config";
 import { InMemoryChatMessageHistory } from "@langchain/core/chat_history";
 import { createAgent } from "langchain";
+import { createCodeBuddyAgent } from "./agent.js";
 
 const chatHistory = new InMemoryChatMessageHistory();
 
 
-const model = createAgent({
-  model: "groq:openai/gpt-oss-120b",
-});
+const agent = createCodeBuddyAgent()
 
 
 export const chat = async (userMessage: string) => {
@@ -15,7 +14,7 @@ export const chat = async (userMessage: string) => {
 
   const messages = await chatHistory.getMessages();
 
-  const result = await model.invoke({
+  const result = await agent.invoke({
     messages,
   });
 
