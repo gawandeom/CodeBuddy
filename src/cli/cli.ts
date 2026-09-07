@@ -1,7 +1,7 @@
 #!/usr/bin/env -S npx tsx
 import { Command } from "commander";
-import { createCodeBuddyAgent, createStructuringAgent } from "./agent.js";
-import { fileExists, readFile, writeFile } from "./fileops.js";
+import { createCodeBuddyAgent, createStructuringAgent } from "../agent/agent.js";
+import { fileExists, readFile, writeFile } from "../filesystem/fileops.js";
 import { showDifference } from "./diff.js";
 import { askApproval, askTask } from "./prompt.js";
 

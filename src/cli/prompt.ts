@@ -9,7 +9,6 @@ rl.close()
 return answer.trim().toLowerCase() === "y"
 }
 
-
 export async function  askTask():Promise<string>{
   const rl = readline.createInterface({input:stdin,output:stdout})
   let ans =await rl.question(">")

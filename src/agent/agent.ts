@@ -5,7 +5,7 @@ import {
   readFileTool,
   runCommandTool,
   searchFilesTool,
-} from "./tools.js";
+} from "../tools/tools.js";
 import { AgentResponse,} from "./schema.js";
 import { workerSystemPrompt } from "./systemPrompt.js";
 
