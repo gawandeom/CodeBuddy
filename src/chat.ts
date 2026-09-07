@@ -1,13 +1,13 @@
 import "dotenv/config";
-import { InMemoryChatMessageHistory } from "@langchain/core/chat_history";
-import { createAgent } from "langchain";
 import { createCodeBuddyAgent } from "./agent.js";
+import { getAIResponse } from "./response.js";
+import { createMemory } from "./memory.js";
 
-const chatHistory = new InMemoryChatMessageHistory();
 
 
-const agent = createCodeBuddyAgent()
 
+const chatHistory = createMemory();
+const agent = createCodeBuddyAgent();
 
 export const chat = async (userMessage: string) => {
   await chatHistory.addUserMessage(userMessage);
@@ -18,11 +18,12 @@ export const chat = async (userMessage: string) => {
     messages,
   });
 
-  const aiResponse = String(
-    result.messages.at(-1)?.content ?? ""
-  );
+  const aiResponse = getAIResponse(result.messages.at(-1)?.content);
 
   await chatHistory.addAIMessage(aiResponse);
 
-  return aiResponse;
+  return {
+    response: aiResponse,
+    messages: result.messages,
+  };
 };

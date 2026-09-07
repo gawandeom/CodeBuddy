@@ -20,10 +20,10 @@ export default function App() {
 
     setLoading(true);
     try {
-      const response = await chat(value);
+      const result = await chat(value);
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: response },
+        { role: "assistant", content: result.response },
       ]);
     } catch {
         setMessages((prev) => [
