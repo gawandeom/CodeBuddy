@@ -1,6 +1,6 @@
 import "dotenv/config";
-import { createCodeBuddyAgent } from "./agent.js";
-import { getAIResponse } from "./response.js";
+import { createCodeBuddyAgent } from "../agent/agent.js";
+import { getAIResponse } from "../agent/response.js";
 import { createMemory } from "./memory.js";
 
 

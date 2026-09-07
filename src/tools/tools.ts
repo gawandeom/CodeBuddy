@@ -5,7 +5,7 @@ import {
   runCommand,
   searchFiles,
   writeFile,
-} from "./fileops.js";
+} from "../filesystem/fileops.js";
 import * as z from "zod";
 
 export const readFileTool = tool(

@@ -3,7 +3,7 @@ import { Box, Text } from "ink";
 import Header from "./header.js";
 import Input from "./Input.js";
 import Spinner from "ink-spinner";
-import { chat } from "../chat.js";
+import { chat } from "../memory/chat.js";
 
 type Message = {
   role: "user" | "assistant";
