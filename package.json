@@ -4,12 +4,12 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": " npx tsx src/ui/index.tsx",
     "build": "tsc",
     "start": "node dist/index.js"
   },
   "bin": {
-    "codebuddy": "./src/cli.ts"
+    "codebuddy": "./src/ui/index.tsx"
   },
   "author": "",
   "license": "ISC",
