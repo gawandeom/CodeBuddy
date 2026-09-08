@@ -3,7 +3,6 @@ import {
   createCodeBuddyAgent,
   createStructuringAgent,
 } from "../agent/agent.js";
-import { getAIResponse } from "../agent/response.js";
 import { createMemory, getRecentMessages } from "./memory.js";
 
 const memory = createMemory();
@@ -18,8 +17,9 @@ export const chat = async (userMessage: string) => {
   const workerResult = await workerAgent.invoke({
     messages: recentMessages,
   });
-
-  const workerResponse = workerResult.messages.at(-1)?.content;
+  const workerResponse = workerResult.messages
+    .map((message) => String(message.content ?? ""))
+    .join("\n");
 
   const structuredResult = await structuringAgent.invoke({
     messages: [
@@ -27,15 +27,19 @@ export const chat = async (userMessage: string) => {
         role: "user",
         content: `
                 Here is the worker agent's response:
-                ${String(workerResponse)??""}
+                ${String(workerResponse)}
                 Convert the worker's response into the required structured format.
+               
                 Rules:
                 - If the worker answered a question or performed an investigation/check, set intent to "question".
                 - Put the worker's answer in response.
                 - For a question, files must be an empty array.
                 - If the worker proposed code changes, set intent to "edit".
                 - Put a concise explanation in response.
+                - Treat successful edit_file tool results as proposed file changes.
+                - An edit_file result contains the filePath and the complete proposed file content.
                 - For an edit, put every changed file in files with its filePath and complete new content.
+                - Do not treat a tool error as a successful edit.
                 - Do not invent file changes.
 `,
       },
@@ -45,12 +49,12 @@ export const chat = async (userMessage: string) => {
     throw new Error("The agent didn't return a structured response.");
   }
 
-  const result = structuredResult.structuredResponse
+  const result = structuredResult.structuredResponse;
   await memory.addAIMessage(result.response);
 
   return {
     response: result.response,
-    intent : result.intent,
+    intent: result.intent,
     files: result.files,
   };
 };

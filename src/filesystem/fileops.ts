@@ -49,7 +49,7 @@ export function editFile(
   filePath: string,
   oldContent: string,
   newContent: string,
-): string {
+): { filePath: string; content: string } {
   const currentContent = readFile(filePath);
 
   if (!currentContent.includes(oldContent)) {
@@ -58,9 +58,7 @@ export function editFile(
 
   const updatedContent = currentContent.replace(oldContent, newContent);
 
-  writeFile(filePath, updatedContent);
-
-  return `Updated ${filePath}`;
+  return { filePath, content: updatedContent };
 }
 export function listFiles(filePath: string = "."): string[] {
   const safePath = resolveWorkspacePath(filePath);
@@ -76,7 +74,7 @@ export function getAllFiles(dir: string): string[] {
     const fullPath = path.join(dir, entry.name);
 
     if (entry.isDirectory()) {
-      if(entry.name === "node_modules")continue
+      if (entry.name === "node_modules") continue;
       files.push(...getAllFiles(fullPath));
     } else if (entry.isFile()) {
       files.push(fullPath);
@@ -88,39 +86,33 @@ export function getAllFiles(dir: string): string[] {
 
 export function searchFiles(query: string): SearchResult[] {
   const files = getAllFiles(workspaceDir);
-     const searchResult:SearchResult[] = []
+  const searchResult: SearchResult[] = [];
 
   for (const file of files) {
     try {
       const fileContent = readFile(file);
-      const lines = fileContent.split("\n")
-      for(let i =0;i<lines.length;i++){
-        const line = lines[i]
-        if(line?.includes(query)){
-        searchResult.push({
-          filePath:path.basename(file),
-          line:i+1,
-          content:line
-        })
+      const lines = fileContent.split("\n");
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (line?.includes(query)) {
+          searchResult.push({
+            filePath: path.basename(file),
+            line: i + 1,
+            content: line,
+          });
         }
       }
     } catch (error: any) {
       console.log(error.message);
     }
   }
-  return searchResult
+  return searchResult;
 }
 
 export function runCommand(command: string): CommandResult {
   const firstCommand = command?.trim().split(/\s+/)[0] || "";
 
-  const allowedCommands = [
-    "ls",
-    "pwd",
-    "npm",
-    "npx",
-    "git",
-  ];
+  const allowedCommands = ["ls", "pwd", "npm", "npx", "git"];
 
   if (!allowedCommands.includes(firstCommand)) {
     return {
@@ -144,9 +136,7 @@ export function runCommand(command: string): CommandResult {
     return {
       success: false,
       error:
-        error.stdout?.toString() ||
-        error.stderr?.toString() ||
-        error.message,
+        error.stdout?.toString() || error.stderr?.toString() || error.message,
     };
   }
 }

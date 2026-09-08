@@ -29,7 +29,7 @@ export const readFileTool = tool(
 
 export const writeFileTool = tool(
   ({ filePath, content }) => {
-     console.log("✍️ write_file called with:", filePath);
+    console.log("✍️ write_file called with:", filePath);
     return writeFile(filePath, content);
   },
   {
@@ -44,13 +44,17 @@ export const writeFileTool = tool(
 
 export const editFileTool = tool(
   ({ filePath, oldContent, newContent }) => {
- console.log("📝 edit_file called with:", filePath);
-    return editFile(filePath, oldContent, newContent);
+    console.log("📝 edit_file called with:", filePath);
+    try {
+      return editFile(filePath, oldContent, newContent);
+    } catch (error:any) {
+      return(`Error: ${error.message}`);
+    }
   },
   {
     name: "edit_file",
     description:
-      "Edit an existing file by replacing an exact section of oldContent with newContent. Use this for targeted code changes. oldContent must exactly match text currently in the file.",
+      "Edit an existing file by replacing an exact section of oldContent with newContent. Use this for targeted code changes. oldContent must exactly match text currently in the file. The file is not written until the user approves the change.",
     schema: z.object({
       filePath: z.string(),
       oldContent: z.string(),
