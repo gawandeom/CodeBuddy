@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+
+const { spawn } = await import("node:child_process");
+
+spawn("npx", ["tsx", "src/ui/index.tsx", ...process.argv.slice(2)], {
+  stdio: "inherit",
+});

@@ -45,7 +45,23 @@ export function writeFile(filePath: string, content: string): string {
   writeFileSync(safePath, content, "utf-8");
   return `Saved ${filePath}`;
 }
+export function editFile(
+  filePath: string,
+  oldContent: string,
+  newContent: string,
+): string {
+  const currentContent = readFile(filePath);
 
+  if (!currentContent.includes(oldContent)) {
+    throw new Error("The content to replace was not found");
+  }
+
+  const updatedContent = currentContent.replace(oldContent, newContent);
+
+  writeFile(filePath, updatedContent);
+
+  return `Updated ${filePath}`;
+}
 export function listFiles(filePath: string = "."): string[] {
   const safePath = resolveWorkspacePath(filePath);
   return readdirSync(safePath);

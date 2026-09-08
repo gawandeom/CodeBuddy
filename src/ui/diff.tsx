@@ -18,7 +18,7 @@ export default function Diff({ filePath, proposedContent }: DiffProps) {
   const changes = diffLines(originalContent, proposedContent);
 
   return (
-    <Box marginTop={5}>
+    <Box>
       <Box flexDirection="column">
         {changes.map((change,index) =>
           change.added ? (

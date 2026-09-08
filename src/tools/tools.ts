@@ -1,5 +1,6 @@
 import { tool } from "langchain";
 import {
+  editFile,
   listFiles,
   readFile,
   runCommand,
@@ -28,6 +29,7 @@ export const readFileTool = tool(
 
 export const writeFileTool = tool(
   ({ filePath, content }) => {
+     console.log("✍️ write_file called with:", filePath);
     return writeFile(filePath, content);
   },
   {
@@ -36,6 +38,23 @@ export const writeFileTool = tool(
     schema: z.object({
       filePath: z.string(),
       content: z.string(),
+    }),
+  },
+);
+
+export const editFileTool = tool(
+  ({ filePath, oldContent, newContent }) => {
+ console.log("📝 edit_file called with:", filePath);
+    return editFile(filePath, oldContent, newContent);
+  },
+  {
+    name: "edit_file",
+    description:
+      "Edit an existing file by replacing an exact section of oldContent with newContent. Use this for targeted code changes. oldContent must exactly match text currently in the file.",
+    schema: z.object({
+      filePath: z.string(),
+      oldContent: z.string(),
+      newContent: z.string(),
     }),
   },
 );
@@ -71,13 +90,13 @@ export const searchFilesTool = tool(
   },
   {
     name: "search_files",
-    description: "Searches the content of every file in the workspace for a given query.",
+    description:
+      "Searches the content of every file in the workspace for a given query.",
     schema: z.object({
       query: z.string(),
     }),
   },
 );
-
 
 const ALLOWED_COMMANDS = ["npm test", "npm run build", "npx tsc --noEmit"];
 

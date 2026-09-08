@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { createAgent, modelRetryMiddleware } from "langchain";
 import {
+  editFileTool,
   listFilesTool,
   readFileTool,
   runCommandTool,
@@ -13,7 +14,7 @@ export function createCodeBuddyAgent() {
   return createAgent({
     model: "groq:openai/gpt-oss-120b",
     //  model: "google-genai:gemini-3.6-flash",
-    tools: [readFileTool, listFilesTool, searchFilesTool, runCommandTool],
+    tools: [editFileTool,readFileTool, listFilesTool, searchFilesTool, runCommandTool],
     middleware: [modelRetryMiddleware({ maxRetries: 2 })],
     systemPrompt: workerSystemPrompt,
   });
