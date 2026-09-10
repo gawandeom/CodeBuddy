@@ -4,7 +4,7 @@ import Header from "./header.js";
 import Input from "./Input.js";
 import Spinner from "ink-spinner";
 import { chat } from "../memory/chat.js";
-import { readFile, writeFile } from "../filesystem/fileops.js";
+import { readFile, runCommand, writeFile } from "../filesystem/fileops.js";
 import Diff from "./diff.js";
 import { Approval } from "./approval.js";
 
@@ -22,21 +22,46 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
+  const [verifying, setVerifying] = useState(false);
 
+  const [verificationResult, setVerificationResult] = useState<{
+    success: boolean;
+    output: string ;
+  } | null>(null);
   const currentFile = pendingFiles[currentFileIndex];
 
-  const handleApproval = (approved: boolean) => {
+  const handleApproval = async (approved: boolean) => {
     if (!currentFile) return;
+
+    const isLastFile = currentFileIndex === pendingFiles.length - 1;
 
     if (approved) {
       writeFile(currentFile.filePath, currentFile.content);
     }
-    if (currentFile === pendingFiles.at(-1)) {
-      setPendingFiles([]);
-      setCurrentFileIndex(0);
-    } else {
-      setCurrentFileIndex((prev) => prev + 1);
-    }
+
+    if (isLastFile) {
+      if (approved) {
+        setVerifying(true);
+        const result = runCommand("npx tsc --noEmit");
+
+        if (result.success) {
+          setVerificationResult({
+            success: result.success,
+            output: result.output ?? "",
+          });
+        } else {
+          setVerificationResult({
+            success: result.success,
+            output: result.error ?? "",
+          });
+        }
+        setVerifying(false);
+        setPendingFiles([]);
+        setCurrentFileIndex(0);
+      } else {
+        setCurrentFileIndex((prev) => prev + 1);
+      }
+    };
   };
   const handleSubmit = async (value: string): Promise<void> => {
     if (!value.trim()) return;
@@ -117,7 +142,7 @@ export default function App() {
         </>
       )}
 
-      {!loading && !currentFile &&(
+      {!loading && !currentFile && (
         <Input
           value={value}
           onChange={setValue}
