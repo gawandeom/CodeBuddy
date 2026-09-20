@@ -12,10 +12,10 @@ import { workerSystemPrompt } from "./systemPrompt.js";
 
 export function createCodeBuddyAgent() {
   return createAgent({
-    model: "groq:openai/gpt-oss-120b",
-    //  model: "google-genai:gemini-3.6-flash",
+    // model: "groq:openai/gpt-oss-120b",
+     model: "google-genai:gemini-3.6-flash",
     tools: [editFileTool,readFileTool, listFilesTool, searchFilesTool, runCommandTool],
-    middleware: [modelRetryMiddleware({ maxRetries: 2 })],
+    middleware: [modelRetryMiddleware({ maxRetries: 0 })],
     systemPrompt: workerSystemPrompt,
   });
 }

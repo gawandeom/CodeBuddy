@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Box, Text } from "ink";
 import Header from "./header.js";
 import Input from "./Input.js";
 import Spinner from "ink-spinner";
 import { chat } from "../memory/chat.js";
-import { readFile, runCommand, writeFile } from "../filesystem/fileops.js";
+import {runCommand, writeFile } from "../filesystem/fileops.js";
 import Diff from "./diff.js";
 import { Approval } from "./approval.js";
 
@@ -26,7 +26,7 @@ export default function App() {
 
   const [verificationResult, setVerificationResult] = useState<{
     success: boolean;
-    output: string ;
+    output: string;
   } | null>(null);
   const currentFile = pendingFiles[currentFileIndex];
 
@@ -46,22 +46,22 @@ export default function App() {
 
         if (result.success) {
           setVerificationResult({
-            success: result.success,
+            success: true,
             output: result.output ?? "",
           });
         } else {
           setVerificationResult({
-            success: result.success,
+            success: false,
             output: result.error ?? "",
           });
         }
         setVerifying(false);
-        setPendingFiles([]);
-        setCurrentFileIndex(0);
-      } else {
-        setCurrentFileIndex((prev) => prev + 1);
       }
-    };
+      setPendingFiles([]);
+      setCurrentFileIndex(0);
+    } else {
+      setCurrentFileIndex((prev) => prev + 1);
+    }
   };
   const handleSubmit = async (value: string): Promise<void> => {
     if (!value.trim()) return;
@@ -141,7 +141,22 @@ export default function App() {
           />
         </>
       )}
+      {verifying && (
+        <Text>
+          <Spinner type="dots" /> Verifying...
+        </Text>
+      )}
 
+      {!verifying && verificationResult && (
+        <Box flexDirection="column">
+          {verificationResult.success ? (
+            <Text color="green">✓ Verification passed</Text>
+          ) : (
+            <Text color="red">✓ Verification Failed</Text>
+          )}
+          <Text>{verificationResult.output}</Text>
+        </Box>
+      )}
       {!loading && !currentFile && (
         <Input
           value={value}
